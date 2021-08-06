@@ -112,26 +112,7 @@ Model5_PseudoR2      = zeros(nsub,1);
 Model5_RecovParams   = zeros(nsub,7);
 Model5_RecovStd      = zeros(nsub,7);
 Model5_Accuracy      = zeros(nsub,6);
-%
-% Model 6: Full model: ambiguity parameter for C2, 3, 5, 6, 7, 8 separate
-% x(1) = inverse temperature mu (>0)
-% x(2) = loss aversion lambda (>0)
-% x(3) = risk preference rho (>0)
-% x(4) = ambiguity preference COND 2 (>0)
-% x(5) = ambiguity preference COND 3 (>0)
-% x(6) = ambiguity preference COND 5 (>0)
-% x(7) = ambiguity preference COND 6 (>0)
-% x(8) = ambiguity preference COND 7 (>0)
-% x(9) = ambiguity preference COND 8 (>0)
-Model6_Params        = zeros(nsub,9);
-Model6_Loglikelihood = zeros(nsub,1);
-Model6_ExitFlag      = zeros(nsub,1);
-Model6_AIC           = zeros(nsub,1);
-Model6_BIC           = zeros(nsub,1);
-Model6_PseudoR2      = zeros(nsub,1);
-Model6_RecovParams   = zeros(nsub,9);
-Model6_RecovStd      = zeros(nsub,9);
-Model6_Accuracy      = zeros(nsub,6);
+
 
 
 parfor (i = 1:nsub,numcores)
@@ -667,122 +648,7 @@ parfor (i = 1:nsub,numcores)
     end
     Model5_Accuracy(i,:) = model_accuracy_summary;
     
-    %% Model 6: Full model: ambiguity parameter for C2, 3, 5, 6, 7, 8 separate
-    npar = 9;
-    
-    %first fit params to subject data
-    disp(['Sub' num2str(i) '- Model 6 fit'])
-    params_rand=[]; 
-    for i_rand=1:300*npar
-        start = randn(1,npar); %also possible: sample from a gamma distribution (rather than normal)
-        [paramtracker, lltracker, ex] = fminunc(@LL_function_Model6, start, opts, P);
-        params_rand=[params_rand; paramtracker lltracker ex];
-    end
-    bad_fit = params_rand(:,npar+2)<=0;
-    if sum(bad_fit)<300*npar
-        params_rand(bad_fit,:)=[];
-    end
-    [~,ids] = sort(params_rand(:,npar+1));
-    best_params = params_rand(ids(1),:);
-    best_params(1) = 5/(1+exp(-best_params(1))); % mu [0 5]
-    best_params(2) = 10/(1+exp(-best_params(2))); % lambda [0 10]
-    best_params(3) = 3/(1+exp(-best_params(3)));  % rho [0 3]
-	best_params(4) = 3/(1+exp(-best_params(4)));  % ambiguity aversion COND 2 [0 3]
-    best_params(5) = 3/(1+exp(-best_params(5)));  % ambiguity preference COND 3 [0 3]
-    best_params(6) = 3/(1+exp(-best_params(6)));  % ambiguity preference COND 5 [0 3]
-    best_params(7) = 3/(1+exp(-best_params(7)));  % ambiguity preference COND 6 [0 3]
-    best_params(8) = 3/(1+exp(-best_params(8)));  % ambiguity preference COND 7 [0 3]
-    best_params(9) = 3/(1+exp(-best_params(9)));  % ambiguity aversion COND 8 [0 3]
-    AIC = 2*best_params(npar+1) + 2*npar;
-    BIC = 2*best_params(npar+1) + npar*log(tr_nb);
-    pseudoR2 = 1 + best_params(npar+1)/(log(0.5)*tr_nb);
-    
-    Model6_Params(i,:)        = best_params(1:npar); %save parameters used to generate data
-    Model6_Loglikelihood(i,:) = best_params(npar+1);
-    Model6_ExitFlag(i,:)      = best_params(npar+2);
-    Model6_AIC(i,:)           = AIC;
-    Model6_BIC(i,:)           = BIC;
-    Model6_PseudoR2(i,:)      = pseudoR2;
-    
-    %parameter recovery analysis
-    disp(['Sub' num2str(i) '- Model 6 Recovery'])
-    params = best_params(1:npar);
-    param_r = zeros(sim_nb,npar); %initiate list of recovered parameter
-    for s=1:sim_nb
-        P_pred = generate_choice_Model6(params,P); %generate choice set
-        gen_ch = P_pred(:,4); %set of generated choices, column nb may need to be changed!
-        P_new = P;
-        P_new(:,8) = gen_ch;
-        %fit model to generated choice set
-        params_rand=[]; 
-        for i_rand=1:20*npar
-            start = randn(1,npar); %also possible: sample from a gamma distribution (rather than normal)
-            [paramtracker, lltracker, ex] = fminunc(@LL_function_Model6, start, opts, P_new);
-            params_rand=[params_rand; paramtracker lltracker ex];
-        end
-        bad_fit = params_rand(:,npar+2)<=0;
-        if sum(bad_fit)<20*npar
-            params_rand(bad_fit,:)=[];
-        end
-        [~,ids] = sort(params_rand(:,npar+1));
-        best_params = params_rand(ids(1),:);
-        best_params(1) = 5/(1+exp(-best_params(1))); % mu [0 5]
-        best_params(2) = 10/(1+exp(-best_params(2))); % lambda [0 10]
-        best_params(3) = 3/(1+exp(-best_params(3)));  % rho [0 3]
-        best_params(4) = 3/(1+exp(-best_params(4)));  % ambiguity aversion COND 2 [0 3]
-        best_params(5) = 3/(1+exp(-best_params(5)));  % ambiguity preference COND 3 [0 3]
-        best_params(6) = 3/(1+exp(-best_params(6)));  % ambiguity preference COND 5 [0 3]
-        best_params(7) = 3/(1+exp(-best_params(7)));  % ambiguity preference COND 6 [0 3]
-        best_params(8) = 3/(1+exp(-best_params(8)));  % ambiguity preference COND 7 [0 3]
-        best_params(9) = 3/(1+exp(-best_params(9)));  % ambiguity aversion COND 8 [0 3]
-        param_r(s,:) = best_params(1:npar);
-    end
-    Model6_RecovParams(i,:)   = mean(param_r,1);
-    Model6_RecovStd(i,:)      = std(param_r,1);
-    
-    %test out of sample accuracy (6-fold leave-one-out)
-    disp(['Sub' num2str(i) '- Model 6 Accuracy'])
-    model_accuracy_summary = [];  
-    grp = repmat((1:6)',56,1);
-    P(:,9) = grp(1:tr_nb);
-    for b = 1:6 %run leave-one out cross-validation for predictive accuracy
-        tr_train_id = P(:,9)~=b;
-        tr_test_id  = P(:,9)==b;
-        P_train = P(tr_train_id,:); 
-        P_test = P(tr_test_id,:); 
-              
-        params_rand=[]; 
-        for i_rand=1:20*npar
-            start = randn(1,npar); %also possible: sample from a gamma distribution (rather than normal)
-            [paramtracker, lltracker, ex] = fminunc(@LL_function_Model6, start, opts, P_train);
-            params_rand=[params_rand; paramtracker lltracker ex];
-        end
-        bad_fit = params_rand(:,npar+2)<=0;
-        if sum(bad_fit)<20*npar
-            params_rand(bad_fit,:)=[];
-        end
-        [~,ids] = sort(params_rand(:,npar+1));
-        best_params = params_rand(ids(1),:);
-        best_params(1) = 5/(1+exp(-best_params(1))); % mu [0 5]
-        best_params(2) = 10/(1+exp(-best_params(2))); % lambda [0 10]
-        best_params(3) = 3/(1+exp(-best_params(3)));  % rho [0 3]
-        best_params(4) = 3/(1+exp(-best_params(4)));  % ambiguity aversion COND 2 [0 3]
-        best_params(5) = 3/(1+exp(-best_params(5)));  % ambiguity preference COND 3 [0 3]
-        best_params(6) = 3/(1+exp(-best_params(6)));  % ambiguity preference COND 5 [0 3]
-        best_params(7) = 3/(1+exp(-best_params(7)));  % ambiguity preference COND 6 [0 3]
-        best_params(8) = 3/(1+exp(-best_params(8)));  % ambiguity preference COND 7 [0 3]
-        best_params(9) = 3/(1+exp(-best_params(9)));  % ambiguity aversion COND 8 [0 3]
-        %calculate model accuracy on test data using these params
-        param = best_params(1:npar);
-        model_accuracy_tmp = zeros(100,1);
-        for s=1:100
-            P_pred = generate_choice_Model6(param,P_test);
-            model_accuracy_tmp(s) = nanmean(P_pred(:,6));
-        end
-        model_accuracy = mean(model_accuracy_tmp);
-        model_accuracy_summary = [model_accuracy_summary model_accuracy];  
-    end
-    Model6_Accuracy(i,:) = model_accuracy_summary;
+   
 
 end
 
@@ -840,16 +706,5 @@ fitResult.Model5.RecovParams   = Model5_RecovParams;
 fitResult.Model5.RecovStd      = Model5_RecovStd;
 fitResult.Model5.Accuracy      = Model5_Accuracy;
 fitResult.Model5.MeanAccuracy  = mean(fitResult.Model5.Accuracy,2);
-
-fitResult.Model6.Params        = Model6_Params;
-fitResult.Model6.Loglikelihood = Model6_Loglikelihood;
-fitResult.Model6.ExitFlag      = Model6_ExitFlag;
-fitResult.Model6.AIC           = Model6_AIC;
-fitResult.Model6.BIC           = Model6_BIC;
-fitResult.Model6.PseudoR2      = Model6_PseudoR2;
-fitResult.Model6.RecovParams   = Model6_RecovParams;
-fitResult.Model6.RecovStd      = Model6_RecovStd;
-fitResult.Model6.Accuracy      = Model6_Accuracy;
-fitResult.Model6.MeanAccuracy  = mean(fitResult.Model6.Accuracy,2);
 
 save('model_results_high_stakes.mat','fitResult')

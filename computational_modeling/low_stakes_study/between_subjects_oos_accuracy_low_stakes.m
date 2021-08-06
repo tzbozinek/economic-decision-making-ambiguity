@@ -32,7 +32,7 @@ ngrp1 = (1:7)'; %7 groups of 41 subjects
 grp_size1 = 41;
 ngrp2 = (8:9)'; %2 groups of 40 subjects
 grp_size2 = 40;
-nmod = 6; %number of models
+nmod = 5; %number of models
 
 %load model results
 load('model_results_low_stakes.mat','fitResult')
@@ -53,7 +53,6 @@ params_mod2 = fitResult.Model2.Params;
 params_mod3 = fitResult.Model3.Params;
 params_mod4 = fitResult.Model4.Params;
 params_mod5 = fitResult.Model5.Params;
-params_mod6 = fitResult.Model6.Params;
 
 %% Now estimate out-of-sample accuracy 
 ngrp=9;
@@ -62,14 +61,12 @@ model2_accuracy = zeros(nsim,ngrp);
 model3_accuracy = zeros(nsim,ngrp);
 model4_accuracy = zeros(nsim,ngrp);
 model5_accuracy = zeros(nsim,ngrp);
-model6_accuracy = zeros(nsim,ngrp);
 
 ll_mod1 = zeros(nsim,ngrp);
 ll_mod2 = zeros(nsim,ngrp);
 ll_mod3 = zeros(nsim,ngrp);
 ll_mod4 = zeros(nsim,ngrp);
 ll_mod5 = zeros(nsim,ngrp);
-ll_mod6 = zeros(nsim,ngrp);
 
 parfor (s=1:nsim,6) %change to actual number of cores
     
@@ -82,7 +79,6 @@ parfor (s=1:nsim,6) %change to actual number of cores
     perm_mod3 = [perm_sorted params_mod3];
     perm_mod4 = [perm_sorted params_mod4];
     perm_mod5 = [perm_sorted params_mod5];
-    perm_mod6 = [perm_sorted params_mod6];
     
     for g=1:ngrp
         
@@ -192,27 +188,7 @@ parfor (s=1:nsim,6) %change to actual number of cores
         model5_accuracy(s,g) = mean(model_accuracy_test_subs);
         ll_mod5(s,g) = mean(ll_test_subs);
                 
-        %Model 6: Full model: ambiguity parameter for C2, 3, 5, 6, 7, 8 separate
-        id_train = perm_mod6(:,2)~=g;
-        param_train = mean(perm_mod6(id_train,3:end),1); %mean params from training subjects
-        %now look at behavior of test subjects
-        id_test = find(perm_mod6(:,2)==g);
-        model_accuracy_test_subs = zeros(length(id_test),1);
-        ll_test_subs = zeros(length(id_test),1);
-        for i=1:length(id_test)
-            subj = id_test(i);
-            P = data(subj).P;
-            model_accuracy_tmp = zeros(100,1);
-            for a=1:100
-                P_pred = generate_choice_Model6(param_train,P);
-                model_accuracy_tmp(a) = nanmean(P_pred(:,6));
-            end
-            model_accuracy_test_subs(i) = mean(model_accuracy_tmp);
-            ll_test_subs(i) = nanmean(P_pred(:,7));
-        end
-        model6_accuracy(s,g) = mean(model_accuracy_test_subs);
-        ll_mod6(s,g) = mean(ll_test_subs);
-
+    
     end     
 end
 
@@ -221,9 +197,8 @@ fitResult.Accuracy.Model2.PerGroup = model2_accuracy;
 fitResult.Accuracy.Model3.PerGroup = model3_accuracy;
 fitResult.Accuracy.Model4.PerGroup = model4_accuracy;
 fitResult.Accuracy.Model5.PerGroup = model5_accuracy;
-fitResult.Accuracy.Model6.PerGroup = model6_accuracy;
 
 fitResult.Accuracy.MeanAllModels = [mean(model1_accuracy,2) mean(model2_accuracy,2) mean(model3_accuracy,2) ...
-    mean(model4_accuracy,2) mean(model5_accuracy,2) mean(model6_accuracy,2)];
+    mean(model4_accuracy,2) mean(model5_accuracy,2)];
 
 save('model_results_low_stakes.mat','fitResult')
