@@ -123,6 +123,13 @@ use "data_wide.dta"
 
 ttest Study1_AnxietyComposite == Study1_DepressionComposite
 ttest Study2_AnxietyComposite == Study2_DepressionComposite
+
+	*Test of multicollinearity between anxiety and depression composite scores
+	regress Study1_GamblePercentCond1 Study1_AnxietyComposite Study1_DepressionComposite
+	vif
+	
+	regress Study2_GamblePercentCond1 Study2_AnxietyComposite Study2_DepressionComposite
+	vif
 	
 ***Model 5 and Trait Anxiety/Depression
 
