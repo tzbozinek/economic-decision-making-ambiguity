@@ -1,4 +1,4 @@
-%-----------------Zbozinek*, Charpentier*, Qi*, & Mobbs---------------------
+%-----------------Zbozinek*, Charpentier*, Qi, & Mobbs---------------------
 % *co-first authors
 
 %Use each subject's parameter estimates to generate data and compare

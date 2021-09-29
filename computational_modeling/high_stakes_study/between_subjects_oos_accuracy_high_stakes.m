@@ -1,4 +1,4 @@
-%-----------------Zbozinek*, Charpentier*, Qi*, & Mobbs---------------------
+%-----------------Zbozinek*, Charpentier*, Qi, & Mobbs---------------------
 % *co-first authors
 
 %Calculates out-of-sample predictive accuracy across subjects

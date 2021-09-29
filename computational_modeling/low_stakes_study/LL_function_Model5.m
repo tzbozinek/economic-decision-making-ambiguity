@@ -1,4 +1,4 @@
-%-----------------Zbozinek*, Charpentier*, Qi*, & Mobbs---------------------
+%-----------------Zbozinek*, Charpentier*, Qi, & Mobbs---------------------
 % *co-first authors
 
 % P is a "parameter" matrix, representing experimental design (gambles).  
